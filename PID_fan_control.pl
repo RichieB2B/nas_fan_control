@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # This script is based on the hybrid fan controller script created by @Stux, and posted at:
 # https://forums.freenas.org/index.php?threads/script-hybrid-cpu-hd-fan-zone-controller.46159/
@@ -138,7 +138,7 @@
 ## Read following config file at start and every X minutes to determine number of warmest disks to average,
 ## target average temperature and PID gains.  If file is not available, or corrupt, use defaults specified
 ## in this script.
-$config_file = '/root/nas_fan_control/PID_fan_control_config.ini';
+$config_file = '/opt/fan_control/4d_config.ini';
 
 ##DEFAULT VALUES
 ## Use the values declared below if the config file is not present
@@ -152,11 +152,11 @@ $hd_fan_duty_start     = 60; # HD fan duty cycle when script starts
 ## DEBUG LEVEL
 ## 0 means no debugging. 1,2,3,4 provide more verbosity
 ## You should run this script in at least level 1 to verify its working correctly on your system
-$debug = 0;
-$debug_log = '/root/Debug_PID_fan_control.log';
+$debug = 1;
+$debug_log = '/opt/fan_control/Debug_PID_fan_control.log';
 
 ## LOG
-$log = '/root/PID_fan_control.log';
+$log = '/opt/fan_control/PID_fan_control.log';
 $log_temp_summary_only      = 0; # 1 if not logging individual HD temperatures.  0 if logging temp of each HD
 $log_header_hourly_interval = 2; # number of hours between log headers.  Valid options are 1, 2, 3, 4, 6 & 12.
                                  # log headers will always appear at the start of a log, at midnight and any 
@@ -223,22 +223,22 @@ $cpu_temp_control = 1;  # 1 if the script will control a CPU fan to control CPU 
 ## You need to determine the actual max fan speeds that are achieved by the fans
 ## Connected to the cpu_fan_header and the hd_fan_header.
 ## These values are used to verify high/low fan speeds and trigger a BMC reset if necessary.
-$cpu_max_fan_speed    = 1800;
-$hd_max_fan_speed     = 3300;
+$cpu_max_fan_speed    = 1200;
+$hd_max_fan_speed     = 1300;
 
 
 ## CPU FAN DUTY LEVELS
 ## These levels are used to control the CPU fans
 $fan_duty_high         = 100;    # percentage on, ie 100% is full speed.
 $fan_duty_med          =  60;
-$fan_duty_low          =  30;
+$fan_duty_low          =  25;
 
 ## HD FAN DUTY LEVELS
 ## These levels are used to control the HD fans
 $hd_fan_duty_high      = 100;    # percentage on, ie 100% is full speed.
 $hd_fan_duty_med_high  =  80;
 $hd_fan_duty_med_low   =  50;
-$hd_fan_duty_low       =  16;    # some 120mm fans stall below 30.
+$hd_fan_duty_low       =  20;    # some 120mm fans stall below 30.
 #$hd_fan_duty_start    =  60;    # HD fan duty cycle when script starts - defined in config file
 
 
@@ -257,9 +257,9 @@ $hd_fan_zone  = 1;
 ## these are the fan headers which are used to verify the fan zone is high. FAN1+ are all in Zone 0, FANA is Zone 1.
 ## cpu_fan_header should be in the cpu_fan_zone
 ## hd_fan_header should be in the hd_fan_zone
-$cpu_fan_header = "FAN2";                 # used for printing to standard output for debugging   
-$hd_fan_header  = "FANB";                 # used for printing to standard output for debugging   
-@hd_fan_list = ("FANA", "FANB", "FANC");  # used for logging to file  
+$cpu_fan_header = "FAN1";                 # used for printing to standard output for debugging   
+$hd_fan_header  = "FANA";                 # used for printing to standard output for debugging   
+@hd_fan_list = ("FANA", "FANB");  # used for logging to file  
 
 
 ################
@@ -268,7 +268,7 @@ $hd_fan_header  = "FANB";                 # used for printing to standard output
 
 ## IPMITOOL PATH
 ## The script needs to know where ipmitool is
-$ipmitool = "/usr/local/bin/ipmitool";
+$ipmitool = "/usr/bin/ipmitool";
 
 ## HD POLLING INTERVAL
 ## The controller will only poll the harddrives periodically. Since hard drives change temperature slowly
@@ -321,7 +321,6 @@ main();
 sub main
 {
     open LOG, ">>", $log or die $!;
-    open DEBUG_LOG, ">>", $debug_log or die $!;
 
     ($hd_ave_target, $Kp, $Ki, $Kd, $hd_num_peak, $hd_fan_duty_start) = read_config();
     
@@ -983,7 +982,7 @@ sub dprint
     if( $debug > $level ) 
     {
         my $datestring = build_date_time_string();
-        print DEBUG_LOG "$datestring: $output";
+        print "$datestring: $output";
     }
 
     return;
@@ -1061,7 +1060,8 @@ sub set_fan_mode
 sub get_cpu_temp_sysctl
 {
     # significantly more efficient to filter to dev.cpu than to just grep the whole lot!
-    my $core_temps = `sysctl -a dev.cpu | egrep -E \"dev.cpu\.[0-9]+\.temperature\" | awk '{print \$2}' | sed 's/.\$//'`;
+    #my $core_temps = `sysctl -a dev.cpu | egrep -E \"dev.cpu\.[0-9]+\.temperature\" | awk '{print \$2}' | sed 's/.\$//'`;
+    my $core_temps = `cat /sys/devices/platform/coretemp.?/hwmon/hwmon?/temp?_input`;
     chomp($core_temps);
 
     dprint(3,"core_temps:\n$core_temps\n");
@@ -1076,6 +1076,7 @@ sub get_cpu_temp_sysctl
     {
         if( $core_temp )
         {
+	    $core_temp = $core_temp / 1000;
             dprint( 2, "core_temp = $core_temp C\n");
             
             $max_core_temp = $core_temp if $core_temp > $max_core_temp;
