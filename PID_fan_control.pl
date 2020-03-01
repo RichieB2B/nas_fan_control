@@ -164,9 +164,9 @@ $log_header_hourly_interval = 2; # number of hours between log headers.  Valid o
 
 ## CPU THRESHOLD TEMPS
 ## A modern CPU can heat up from 35C to 60C in a second or two. The fan duty cycle is set based on this
-$high_cpu_temp = 55;       # will go HIGH when we hit
-$med_cpu_temp  = 45;       # will go MEDIUM when we hit, or drop below again
-$low_cpu_temp  = 35;       # will go LOW when we fall below 35 again
+$high_cpu_temp = 64;       # will go HIGH when we hit
+$med_cpu_temp  = 50;       # will go MEDIUM when we hit, or drop below again
+$low_cpu_temp  = 38;       # will go LOW when we fall below 35 again
 
 ## HD THRESHOLD TEMPS
 ## HD change temperature slowly. 
@@ -501,7 +501,9 @@ sub main
 ################################################# SUBS
 sub get_hd_list
 {
-    my $disk_list = `camcontrol devlist | grep -v "SSD" | grep -v "Verbatim" | grep -v "Kingston" | grep -v "Elements" | sed 's:.*(::;s:).*::;s:,pass[0-9]*::;s:pass[0-9]*,::' | egrep '^[a]*da[0-9]+\$' | tr '\012' ' '`;
+    ## my $disk_list = `camcontrol devlist | grep -v "SSD" | grep -v "Verbatim" | grep -v "Kingston" | grep -v "Elements" | sed 's:.*(::;s:).*::;s:,pass[0-9]*::;s:pass[0-9]*,::' | egrep '^[a]*da[0-9]+\$' | tr '\012' ' '`;
+    my $disk_list = `/usr/bin/lsblk|/usr/bin/egrep 'sd.?\\b'|/usr/bin/awk '{ print \$1 }'| /usr/bin/tr '\012' ' '`;
+
     dprint(3,"$disk_list\n");
 
     my @vals = split(" ", $disk_list);
@@ -521,7 +523,7 @@ sub get_hd_temp
     foreach my $item (@hd_list)
     {
         my $disk_dev = "/dev/$item";
-        my $command = "/usr/local/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
+        my $command = "/usr/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
          
         dprint( 3, "$command\n" );
         
@@ -560,7 +562,7 @@ sub get_hd_temps
     foreach my $item (@hd_list)
     {
         my $disk_dev = "/dev/$item";
-        my $command = "/usr/local/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
+        my $command = "/usr/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
 
         my $output = `$command`;
 
