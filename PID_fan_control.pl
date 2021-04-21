@@ -523,18 +523,14 @@ sub get_hd_temp
     foreach my $item (@hd_list)
     {
         my $disk_dev = "/dev/$item";
-        my $command = "/usr/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
+        my $command = "/usr/sbin/hddtemp -n $disk_dev";
          
         dprint( 3, "$command\n" );
         
-        my $output = `$command`;
+        my $temp = `$command`;
 
-        dprint( 2, "$output");
+        dprint( 2, "$temp");
 
-        my @vals = split(" ", $output);
-
-        # grab 10th item from the output, which is the hard drive temperature (on Seagate NAS HDs)
-          my $temp = "$vals[9]";
         chomp $temp;
         
         if( $temp )
