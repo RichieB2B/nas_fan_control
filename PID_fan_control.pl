@@ -502,7 +502,7 @@ sub main
 sub get_hd_list
 {
     ## my $disk_list = `camcontrol devlist | grep -v "SSD" | grep -v "Verbatim" | grep -v "Kingston" | grep -v "Elements" | sed 's:.*(::;s:).*::;s:,pass[0-9]*::;s:pass[0-9]*,::' | egrep '^[a]*da[0-9]+\$' | tr '\012' ' '`;
-    my $disk_list = `/usr/bin/lsblk|/usr/bin/egrep 'sd.?\\b'|/usr/bin/awk '{ print \$1 }'| /usr/bin/tr '\012' ' '`;
+    my $disk_list = `ls -l /dev/disk/by-id/ata-* | egrep -v '(SSD|Verbatim|Kingston|Elements|-part)' | sed -e 's#.*/##' | tr '\012' ' '`;
 
     dprint(3,"$disk_list\n");
 
