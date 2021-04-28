@@ -164,9 +164,9 @@ $log_header_hourly_interval = 2; # number of hours between log headers.  Valid o
 
 ## CPU THRESHOLD TEMPS
 ## A modern CPU can heat up from 35C to 60C in a second or two. The fan duty cycle is set based on this
-$high_cpu_temp = 64;       # will go HIGH when we hit
-$med_cpu_temp  = 50;       # will go MEDIUM when we hit, or drop below again
-$low_cpu_temp  = 38;       # will go LOW when we fall below 35 again
+$high_cpu_temp = 67;       # will go HIGH when we hit
+$med_cpu_temp  = 58;       # will go MEDIUM when we hit, or drop below again
+$low_cpu_temp  = 48;       # will go LOW when we fall below 35 again
 
 ## HD THRESHOLD TEMPS
 ## HD change temperature slowly. 
@@ -174,7 +174,7 @@ $low_cpu_temp  = 38;       # will go LOW when we fall below 35 again
 ## more silent your system.
 ## Note, it is possible for your HDs to go above this... but if your cooling is good, they shouldn't.
 # $hd_ave_target = 38.0;   # define this value in the DEFAULT VALUES block at top of script
-$hd_max_allowed_temp = 40; # celsius. PID control aborts and fans set to 100% duty cycle when a HD hits this temp.
+$hd_max_allowed_temp = 42; # celsius. PID control aborts and fans set to 100% duty cycle when a HD hits this temp.
                            # This ensures that no matter how poorly chosen the PID gains are, or how much of a spread
                            # there is between the average HD temperature and the maximum HD temperature, the HD fans 
                            # will be set to 100% if any drive reaches this temperature.
@@ -195,7 +195,7 @@ $cpu_hd_override_temp = 65;
 $hd_fans_cool_cpu = 1;      # 1 if the hd fans should spin up to cool the cpu, 0 otherwise
 
 ## HD FAN DUTY CYCLE TO OVERRIDE CPU FANS
-$cpu_fans_cool_hd            = 1;  # 1 if the CPU fans should spin up to cool the HDs, when needed.  0 otherwise.  This may be 
+$cpu_fans_cool_hd            = 0;  # 1 if the CPU fans should spin up to cool the HDs, when needed.  0 otherwise.  This may be 
                                    #   useful if the CPU fan zone also contains chassis exit fans, as an increase in chassis exit 
                                    #   fan speed may increase the HD cooling air flow.
 $hd_cpu_override_duty_cycle = 95;  # when the HD duty cycle equals or exceeds this value, the CPU fans may be overridden to help cool HDs
