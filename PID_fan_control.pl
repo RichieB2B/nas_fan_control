@@ -506,7 +506,7 @@ sub main
 sub get_hd_list
 {
     ## my $disk_list = `camcontrol devlist | grep -v "SSD" | grep -v "Verbatim" | grep -v "Kingston" | grep -v "Elements" | sed 's:.*(::;s:).*::;s:,pass[0-9]*::;s:pass[0-9]*,::' | egrep '^[a]*da[0-9]+\$' | tr '\012' ' '`;
-    my $disk_list = `/usr/bin/lsblk|/usr/bin/egrep 'sd.?\\b'|/usr/bin/awk '{ print \$1 }'| /usr/bin/tr '\012' ' '`;
+    my $disk_list = `ls -l /dev/disk/by-id/ata-* | egrep -v '(SSD|Verbatim|Kingston|Elements|-part)' | sed -e 's#.*/##' | tr '\012' ' '`;
 
     dprint(3,"$disk_list\n");
 
@@ -527,18 +527,14 @@ sub get_hd_temp
     foreach my $item (@hd_list)
     {
         my $disk_dev = "/dev/$item";
-        my $command = "/usr/sbin/smartctl -A $disk_dev | grep Temperature_Celsius";
+        my $command = "/usr/sbin/hddtemp -n $disk_dev";
          
         dprint( 3, "$command\n" );
         
-        my $output = `$command`;
+        my $temp = `$command`;
 
-        dprint( 2, "$output");
+        dprint( 2, "$temp");
 
-        my @vals = split(" ", $output);
-
-        # grab 10th item from the output, which is the hard drive temperature (on Seagate NAS HDs)
-          my $temp = "$vals[9]";
         chomp $temp;
         
         if( $temp )

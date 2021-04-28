@@ -1,0 +1,11 @@
+[Unit]
+Description=Fan control
+
+[Service]
+Restart=always
+RestartSec=30
+ExecStart=/opt/fan_control/PID_fan_control.pl
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
